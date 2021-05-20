@@ -6,8 +6,8 @@ function addNewInfluxInstanceToCache({
     instance = undefined,
     status = undefined
 }) {
-    console.log(name, instance, i)
-    if (!name || !instance || !i) {
+
+    if (!name || !instance) {
         throw new Error("No database has been specified!")
     }
 

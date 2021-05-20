@@ -2,7 +2,6 @@
   <v-row justify="center">
     <v-dialog
       v-model="instancesDialogOpened"
-      fullscreen
       hide-overlay
       transition="dialog-bottom-transition"
     >
@@ -46,7 +45,7 @@
           class="mx-15 mt-5"
         >
           <v-row>
-            <v-col 
+            <v-col
               xs="12"
               sm="12"
               md="12"
@@ -60,7 +59,7 @@
                 hint="The URL of your instance, must include http/https"
               />
             </v-col>
-            <v-col 
+            <v-col
               xs="12"
               sm="12"
               md="12"
@@ -73,7 +72,7 @@
                 hint="Custom name for your instance"
               />
             </v-col>
-            <v-col 
+            <v-col
               xs="12"
               sm="12"
               md="6"
@@ -86,7 +85,7 @@
                 hint="Leave blank if authentication is disabled"
               />
             </v-col>
-            <v-col 
+            <v-col
               xs="12"
               sm="12"
               md="6"
@@ -130,14 +129,6 @@
           Successfully added your database and found these databases! <br>
           <span v-html="instance_databases" />
         </v-alert>
-        <v-data-table
-          dense
-          :headers="table_headers"
-          :items="instancesList"
-          item-key="i"
-          single-line
-          class="ma-15"
-        />
       </v-card>
     </v-dialog>
   </v-row>
@@ -158,13 +149,6 @@ export default {
       type: Number,
       require: true,
       default: 0
-    },
-    instancesList: {
-      type: Array,
-      require: true,
-      default: () => {
-            return []
-      }
     }
   },
   data: () => ({
@@ -182,20 +166,7 @@ export default {
     instances: {
       message: "Add influx instances below..."
     },
-    instance_form_valid: true,
-    table_headers: [
-      {
-            text: 'Instance #',
-            align: 'start',
-            filterable: false,
-            value: 'i'
-      },
-      { text: 'Name', value: 'name' },
-      { text: 'URL', value: 'url' },
-      { text: 'Username', value: 'username' },
-      { text: 'Password', value: 'password' },
-      { text: 'Connection Status', value: 'status' }
-    ]
+    instance_form_valid: true
   }),
   created() {},
   methods: {
@@ -204,17 +175,18 @@ export default {
     },
     addInstance(){
         this.error_message = "";
-        this.alert = false;
-        let instace_options = {
+        this.error_alert = false;
+        this.instance_databases = "";
+        this.success_alert = false;
+        let instance_options = {
           url: this.url,
           name: this.name,
           username: this.username,
           password: this.password
         };
         axios
-        .post("/api/instances", instace_options)
+        .post("/api/instances", instance_options)
         .then(res => {
-          console.log(res.data)
           if(res.data.errors.length > 0){
             res.data.errors.forEach((e, index) => {
               this.error_message += `${index}. ${e}<br>`

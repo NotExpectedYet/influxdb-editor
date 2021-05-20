@@ -3,6 +3,18 @@
     bg
     fill-height
   >
+    <v-row>
+      <v-col>
+        <v-data-table
+          dense
+          :headers="table_headers"
+          :items="instances_list"
+          item-key="i"
+          single-line
+        />
+      </v-col>
+    </v-row>
+
     <ErrorPopUp
       :last-error="last_error"
       :error-dialog.sync="error_dialog"
@@ -10,7 +22,6 @@
     <AddInfluxInstance
       :instances-dialog-opened="instances_dialog_opened"
       :instances-count="instances_count"
-      :instances-list="instances_list"
     />
   </v-container>
 </template>
@@ -31,7 +42,20 @@ export default {
     error_dialog: false,
     instances_dialog_opened: false,
     instances_count: 0,
-    instances_list: []
+    instances_list: [],
+    table_headers: [
+      {
+        text: 'Instance #',
+        align: 'start',
+        filterable: false,
+        value: 'i'
+      },
+      { text: 'Name', value: 'name' },
+      { text: 'URL', value: 'url' },
+      { text: 'Username', value: 'username' },
+      { text: 'Password', value: 'password' },
+      { text: 'Connection Status', value: 'status' }
+    ]
   }),
   mounted() {
     this.checkForInstances();

@@ -3,15 +3,28 @@ const { findIndex } = require("lodash")
 
 const { influx_instances_db, grabDataPoint, writeDataPoint } = require("./lowdb.database.js");
 const { addNewInfluxInstanceToCache } = require("../../cache/influxdb.cache.js");
+const { createInfluxOptions } = require("../../utils/influx.utils.js");
 
-function influxInstanceConnect() {
-    // const currentInfluxInstanceList = grabDataPoint(influx_instances_db);
+async function influxInstanceConnect() {
+    const currentInfluxInstanceList = grabDataPoint(influx_instances_db);
+    for (let i = 0; i < currentInfluxInstanceList.length; i++) {
+        const cd = currentInfluxInstanceList[i];
 
-    // for (let i = 0; i < currentInfluxInstanceList.length; i++) {
-    //     const cd = currentInfluxInstanceList[i];
+        const options = createInfluxOptions(`${cd.protocol}://${cd.host}:${cd.port}`, cd.username, cd.password);
 
-    //     addNewInfluxInstanceToCache({ name: cd.name, database: cd.databaseConnection });
-    // }
+        const new_instance = new Influx.InfluxDB(options);
+
+        const saveConnectionCache = {
+            i: cd.i,
+            name: cd.name,
+            instance: new_instance,
+            status: true
+        }
+
+        saveConnectionCache.status = await testInstanceConnection(new_instance)
+
+        addNewInfluxInstanceToCache(saveConnectionCache);
+    }
 
 }
 async function addInfluxInstance({ url = undefined, name = undefined, username = undefined, password = undefined }) {
@@ -19,32 +32,11 @@ async function addInfluxInstance({ url = undefined, name = undefined, username =
 
     if (!url.includes("http")) {
         errors.push("Invalid URL!")
-    }
-
-    let options = {
-        username: username,
-        password: password,
-        host: "10.50.0.15",
-        port: 8086,
+        return [ errors ]
     }
 
     if (!errors.length > 0) {
-        const parsed_url = new URL(url)
 
-        // // Strip out http / https
-        if (parsed_url.protocol === "http:") {
-            options.protocol = "http"
-            options.port = 80;
-        } else if (parsed_url.protocol === "https:") {
-            options.protocol = "https",
-                options.port = 443
-        }
-
-        if (!parsed_url.port === "") {
-            options.port = parseInt(parsed_url.port);
-        }
-        
-        options.host = parsed_url.host;
 
         const new_instance = new Influx.InfluxDB(options);
         let databaseList;
@@ -55,8 +47,15 @@ async function addInfluxInstance({ url = undefined, name = undefined, username =
             return { errors }
         }
 
+        const options = createInfluxOptions(url, username, password);
+
         const currentInfluxInstanceList = grabDataPoint(influx_instances_db);
-        const instanceIndex = currentInfluxInstanceList.length + 1;
+
+        let instanceIndex = currentInfluxInstanceList.length
+        if(instanceIndex !== 0){
+            instanceIndex = currentInfluxInstanceList.length + 1;
+        }
+
 
         const saveConnectionCache = {
             i: instanceIndex,
@@ -77,13 +76,13 @@ async function addInfluxInstance({ url = undefined, name = undefined, username =
         const database_index = findIndex(currentInfluxInstanceList, function(o) {
                 return o.name == name
         })
-        console.log(database_index)
+
         if (database_index !== -1) {
             errors.push("Instance already exists");
             return { errors }
         } else {
             writeDataPoint(influx_instances_db, saveDatabase)
-    
+
             addNewInfluxInstanceToCache(saveConnectionCache);
 
             return { errors, databaseList };
@@ -93,6 +92,26 @@ async function addInfluxInstance({ url = undefined, name = undefined, username =
         return { errors };
     }
 
+}
+
+async function testInstanceConnection(instance){
+    let connection;
+    try {
+        await instance.getDatabaseNames()
+        connection = true;
+    } catch (e) {
+        connection = false;
+    }
+    return connection;
+}
+async function getInstanceDatabaseNames(instance){
+    let databaseNames;
+    try {
+        databaseNames = await instance.getDatabaseNames()
+    } catch (e) {
+        databaseNames = [];
+    }
+    return databaseNames;
 }
 
 async function createDatabase(options) {
@@ -128,6 +147,8 @@ module.exports = {
     influxInstanceConnect,
     addInfluxInstance,
     createDatabase,
+    testInstanceConnection,
+    getInstanceDatabaseNames,
     writePointsToDatebase,
     queryDatabase
 }
