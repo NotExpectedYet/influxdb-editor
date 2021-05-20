@@ -2,10 +2,11 @@
 A webserver for managing and editing influxdb... 
 
 # Road to V1. - Not an exausive list, may be edited in the future as the application progresses out of my brain.
- - [ ] Web server backend written in nodejs + express.
- - [ ] GUI frontend written in VueJS + Vuetify
+ - [x] Web server backend written in nodejs + express.
+ - [x] GUI frontend written in VueJS + Vuetify
  - [ ] Simple login and authentication system
- - [ ] Allow connection to influx v1.x instances
+ - [x] Allow connection to influx v1.x instances
+ - [x] Add influx instance to database
  - [ ] Allow connection to influx v2.x instances
  - [ ] Allow to create new influxDB database
  - [ ] Scan current database list
