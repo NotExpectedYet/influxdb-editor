@@ -8,7 +8,7 @@ A webserver for managing and editing influxdb...
  - [x] Allow connection to influx v1.x instances
  - [x] Add influx instance to internal database
  - [ ] Validation around instance input
- - [ ] Allow connection to influx v2.x instances
+ - [ ] Allow connection to influx v2.x instances (may work already not tested)
  - [ ] Allow to create new influxDB database
  - [ ] Scan current database list
  - [ ] Select database for managing 
