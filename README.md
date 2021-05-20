@@ -6,7 +6,8 @@ A webserver for managing and editing influxdb...
  - [x] GUI frontend written in VueJS + Vuetify
  - [ ] Simple login and authentication system
  - [x] Allow connection to influx v1.x instances
- - [x] Add influx instance to database
+ - [x] Add influx instance to internal database
+ - [ ] Validation around instance input
  - [ ] Allow connection to influx v2.x instances
  - [ ] Allow to create new influxDB database
  - [ ] Scan current database list
