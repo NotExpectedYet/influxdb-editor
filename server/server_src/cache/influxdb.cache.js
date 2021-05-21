@@ -12,18 +12,30 @@ function addNewInfluxInstanceToCache({
     }
 
     influx_connection_cache[i] = {
+        i,
         name,
         instance: instance,
         status: status
     }
+
+}
+function removeInstanceFromCache(i = undefined) {
+
+    if (!i) {
+        throw new Error("No index has been specified!")
+    }
+
+    influx_connection_cache.splice(i, 1)
+
 }
 
 
-function getInfluxInstanceCache() {
+async function getInfluxInstanceCache() {
     return influx_connection_cache;
 }
 
 module.exports = {
     addNewInfluxInstanceToCache,
+    removeInstanceFromCache,
     getInfluxInstanceCache
 }

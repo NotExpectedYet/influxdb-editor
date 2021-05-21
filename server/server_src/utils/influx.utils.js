@@ -28,6 +28,14 @@ function createInfluxOptions(url = undefined, username = undefined, password = u
     return options;
 }
 
+function createInfluxURL(protocol, host, port) {
+    if (port === 443 || port === 80) {
+    return `${protocol}://${host}`
+    }
+    return `${protocol}://${host}:${port}`
+}
+
 module.exports = {
-    createInfluxOptions
+    createInfluxOptions,
+    createInfluxURL
 }

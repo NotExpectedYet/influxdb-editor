@@ -2,6 +2,7 @@
   <v-row justify="center">
     <v-dialog
       v-model="instancesDialogOpened"
+      persistent
       hide-overlay
       transition="dialog-bottom-transition"
     >
@@ -14,13 +15,13 @@
             <v-btn
               dark
               text
-              disabled
+              :disabled="instancesCount === 0"
               @click="closeAddInstanceDialog"
             >
               <v-icon>mdi-close</v-icon>
             </v-btn>
           </v-toolbar-items>
-          <v-toolbar-title v-if="instanceCount === 0">
+          <v-toolbar-title v-if="instancesCount === 0">
             {{ no_instances.message }}
           </v-toolbar-title>
           <v-toolbar-title v-else>
@@ -103,18 +104,10 @@
           <v-btn
             :disabled="!instance_form_valid"
             color="success"
-            class="mr-4 mt-2"
+            class="ma-4"
             @click="addInstance"
           >
-            Add
-          </v-btn>
-
-          <v-btn
-            color="warning"
-            class="mt-2"
-            @click="testInstanceConnection"
-          >
-            Test Connection
+            Save
           </v-btn>
         </v-form>
         <v-spacer />
@@ -145,10 +138,15 @@ export default {
       require: true,
       default: false
     },
-    instanceCount: {
+    instancesCount: {
       type: Number,
       require: true,
       default: 0
+    },
+    instancesList: {
+      type: Array,
+      require: true,
+      default: ()=>[]
     }
   },
   data: () => ({
@@ -164,14 +162,17 @@ export default {
       message: "No influx instances detected! Please setup below..."
     },
     instances: {
-      message: "Add influx instances below..."
+      message: "Add new influx instances below..."
     },
     instance_form_valid: true
   }),
-  created() {},
+  created() {
+  },
+  mounted() {
+  },
   methods: {
     closeAddInstanceDialog(){
-      this.$emit("update:instances-dialog-opened", false)
+      this.$emit("update:instancesDialogOpened", false)
     },
     addInstance(){
         this.error_message = "";
@@ -197,14 +198,24 @@ export default {
               this.instance_databases += `${index}. ${d}<br>`
             })
             this.success_alert = true;
+            this.url = "";
+            this.name ="";
+            this.username = "";
+            this.password = "";
+            // TODO
+            // Change this for a function call to the above view.
+            axios
+            .get("/api/instances")
+            .then(res => {
+              this.$emit("update:instancesList", res.data);
+              this.$emit("update:instancesCount", res.data.length);
+            })
           }
         })
         .catch(error => {
-          this.last_error = error.msg;
+          this.error_alert = true;
+          this.error_message = error.msg;
         });
-    },
-    testInstanceConnection(){
-      this.$emit("update:instances-dialog-opened", false)
     }
 }
 };

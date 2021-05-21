@@ -1,20 +1,20 @@
 const Influx = require("influx");
 const { findIndex } = require("lodash")
 
-const { influx_instances_db, grabDataPoint, writeDataPoint } = require("./lowdb.database.js");
-const { addNewInfluxInstanceToCache } = require("../../cache/influxdb.cache.js");
-const { createInfluxOptions } = require("../../utils/influx.utils.js");
+const { influx_instances_db, grabDataPoint, writeDataPoint, deleteDataPoint } = require("./lowdb.database.js");
+const { addNewInfluxInstanceToCache, removeInstanceFromCache } = require("../../cache/influxdb.cache.js");
+const { createInfluxOptions, createInfluxURL } = require("../../utils/influx.utils.js");
 
 async function influxInstanceConnect() {
     const currentInfluxInstanceList = grabDataPoint(influx_instances_db);
     for (let i = 0; i < currentInfluxInstanceList.length; i++) {
         const cd = currentInfluxInstanceList[i];
 
-        const options = createInfluxOptions(`${cd.protocol}://${cd.host}:${cd.port}`, cd.username, cd.password);
+        const options = createInfluxOptions(createInfluxURL(cd.protocol, cd.host, cd.port), cd.username, cd.password);
 
-        const new_instance = new Influx.InfluxDB(options);
+        let new_instance = new Influx.InfluxDB(options);
 
-        const saveConnectionCache = {
+        let saveConnectionCache = {
             i: cd.i,
             name: cd.name,
             instance: new_instance,
@@ -22,7 +22,6 @@ async function influxInstanceConnect() {
         }
 
         saveConnectionCache.status = await testInstanceConnection(new_instance)
-
         addNewInfluxInstanceToCache(saveConnectionCache);
     }
 
@@ -37,17 +36,16 @@ async function addInfluxInstance({ url = undefined, name = undefined, username =
 
     if (!errors.length > 0) {
 
+        const options = createInfluxOptions(url, username, password);
 
         const new_instance = new Influx.InfluxDB(options);
-        let databaseList;
-        try {
-            databaseList = await new_instance.getDatabaseNames()
-        } catch (e) {
+
+        const databaseList = await getInstanceDatabaseNames(new_instance);
+
+        if (!databaseList) {
             errors.push("Unable to contact database...")
             return { errors }
         }
-
-        const options = createInfluxOptions(url, username, password);
 
         const currentInfluxInstanceList = grabDataPoint(influx_instances_db);
 
@@ -94,6 +92,12 @@ async function addInfluxInstance({ url = undefined, name = undefined, username =
 
 }
 
+async function deleteInfluxInstance(i) {
+    let influx_instances = grabDataPoint(influx_instances_db);
+    deleteDataPoint(influx_instances_db, influx_instances[i])
+    removeInstanceFromCache(i);
+}
+
 async function testInstanceConnection(instance){
     let connection;
     try {
@@ -105,13 +109,14 @@ async function testInstanceConnection(instance){
     return connection;
 }
 async function getInstanceDatabaseNames(instance){
-    let databaseNames;
+    let databaseNames = [];
     try {
         databaseNames = await instance.getDatabaseNames()
+
+        return databaseNames;
     } catch (e) {
-        databaseNames = [];
+        return false;
     }
-    return databaseNames;
 }
 
 async function createDatabase(options) {
@@ -146,6 +151,7 @@ async function queryDatabase(queryString) {
 module.exports = {
     influxInstanceConnect,
     addInfluxInstance,
+    deleteInfluxInstance,
     createDatabase,
     testInstanceConnection,
     getInstanceDatabaseNames,
