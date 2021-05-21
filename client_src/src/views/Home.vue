@@ -104,7 +104,7 @@
             text
             @click="deleteItemConfirm"
           >
-            OK
+            Yes
           </v-btn>
           <v-spacer />
         </v-card-actions>
@@ -188,18 +188,14 @@
                 />
               </v-col>
             </v-row>
+            <v-btn
+              color="success"
+              @click="saveEditedItem"
+            >
+              Save
+            </v-btn>
           </v-container>
         </v-card-text>
-
-        <v-card-actions>
-          <v-btn
-            color="success"
-            class="ma-4"
-            @click="saveEditedItem"
-          >
-            Save
-          </v-btn>
-        </v-card-actions>
       </v-card>
     </v-dialog>
     <ErrorPopUp
@@ -264,6 +260,8 @@ export default {
     openAddInstancesDialog(){
       this.instances_dialog_opened = true;
     },
+    //TODO
+    // Probably should move these to a seperate file
     checkForInstances(){
         axios
         .get("/api/instances")

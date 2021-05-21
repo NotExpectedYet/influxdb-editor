@@ -1,4 +1,4 @@
-function createInfluxOptions(url = undefined, username = undefined, password = undefined) {
+function createInfluxOptions(url = undefined, username = undefined, password = undefined, database = undefined) {
     if(!url){
         throw new Error("No URL provided!")
     }
@@ -7,6 +7,7 @@ function createInfluxOptions(url = undefined, username = undefined, password = u
         password: password,
         host: "10.50.0.15",
         port: 8086,
+        database
     }
     const parsed_url = new URL(url)
 

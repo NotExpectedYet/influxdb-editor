@@ -24,6 +24,21 @@ router.get("/instances", async (req, res) => {
         res.sendStatus(500)
     }
 });
+router.get("/instances/:id", async (req, res) => {
+    let i = req.params.id;
+    try {
+        const instanceCache = await getInfluxInstanceCache(i);
+        instanceCache.status = await testInstanceConnection(instanceCache.instance);
+        instanceCache.databases = await getInstanceDatabaseNames(instanceCache.instance)
+        instanceCache.url = createInfluxURL(instanceCache.instance._options.hosts[0].protocol, instanceCache.instance._options.hosts[0].host, instanceCache.instance._options.hosts[0].port);
+        instanceCache.password = instanceCache.instance._options.password;
+        instanceCache.username = instanceCache.instance._options.username;
+        res.send(instanceCache)
+    } catch (e) {
+        console.error(e.stack)
+        res.sendStatus(500)
+    }
+});
 router.post("/instances", async (req, res) => {
      let data = req.body;
     try {

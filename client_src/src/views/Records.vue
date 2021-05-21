@@ -1,6 +1,91 @@
 <template>
   <v-container>
-    <v-data-table
+    <v-row>
+      <v-col
+        xs="12"
+        sm="12"
+        md="6"
+        lg="4"
+        xl="3"
+      >
+        <v-card>
+          <v-select
+            v-model="instances_list_selected"
+            :hint="`${instances_list_selected.i}: ${instances_list_selected.name}`"
+            :items="instances_list"
+            item-text="name"
+            item-value="i"
+            label="Select"
+            persistent-hint
+            return-object
+            single-line
+            @change="changeInstance()"
+          />
+        </v-card>
+      </v-col>
+      <v-col
+        xs="12"
+        sm="12"
+        md="6"
+        lg="4"
+        xl="3"
+      >
+        <v-card>
+          <v-select
+            v-model="databases_list_selected"
+            :hint="`${databases_list_selected}`"
+            :items="databases_list"
+            item-text="name"
+            item-value="i"
+            label="Select"
+            persistent-hint
+            return-object
+            single-line
+            @change="loadDatabase()"
+          />
+        </v-card>
+      </v-col>
+      <v-col
+        xs="12"
+        sm="12"
+        md="6"
+        lg="2"
+        xl="3"
+      >
+        <v-card>
+          <v-select
+            v-model="databases_list_selected"
+            :hint="`${databases_list_selected}`"
+            :items="databases_list"
+            item-text="name"
+            item-value="i"
+            label="Measurement"
+            persistent-hint
+            return-object
+            single-line
+            @change="loadDatabase()"
+          />
+        </v-card>
+      </v-col>
+      <v-col
+        xs="12"
+        sm="12"
+        md="6"
+        lg="2"
+        xl="1"
+      >
+        <v-card>
+          <v-text-field
+            v-model="record_limit"
+            type="Number"
+            hint="This field changes the amount of records pulled from the database"
+            label="Record Limit"
+          />
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <!-- <v-data-table
       :headers="headers"
       :items="qc_records"
       sort-by="time"
@@ -111,8 +196,11 @@
           Reset
         </v-btn>
       </template>
-    </v-data-table>
-    <ErrorPopUp :last-error="last_error" :error-dialog="error_dialog" />
+    </v-data-table> -->
+    <ErrorPopUp
+      :last-error="last_error"
+      :error-dialog="error_dialog"
+    />
   </v-container>
 </template>
 
@@ -126,61 +214,13 @@ export default {
     ErrorPopUp: ErrorPopUp
   },
   data: () => ({
-    tab: null,
-    record_count: 100,
-    search: "",
-    dialog: false,
-    dialogDelete: false,
     last_error: "",
     error_dialog: false,
-    valid: false,
-    headers: [
-      {
-        text: "Date Scanned",
-        align: "center",
-        sortable: true,
-        value: "time"
-      },
-      {
-        text: "Product",
-        align: "center",
-        sortable: true,
-        value: "product"
-      },
-      {
-        text: "Status",
-        align: "center",
-        sortable: true,
-        value: "status"
-      },
-      {
-        text: "Manufacture User",
-        align: "center",
-        sortable: true,
-        value: "user"
-      },
-      {
-        text: "QC User",
-        align: "center",
-        sortable: true,
-        value: "QCuser"
-      },
-      { text: "Delete", align: "center", value: "actions", sortable: false }
-    ],
-    qc_records: [],
-    editedIndex: -1,
-    editedItem: {
-      product: 0,
-      status: 0,
-      user: 0,
-      QCuser: 0
-    },
-    defaultItem: {
-      product: 0,
-      status: 0,
-      user: 0,
-      QCuser: 0
-    }
+    instances_list: [],
+    instances_list_selected: {},
+    databases_list: [],
+    databases_list_selected: {},
+    record_limit: 100
   }),
 
   computed: {
@@ -197,20 +237,49 @@ export default {
       val || this.closeDelete();
     }
   },
-
   created() {
-    this.initialize();
+    this.checkForInstances();
   },
   methods: {
-    initialize() {
-      axios
-        .get("/api/qc")
+    checkForInstances(){
+        axios
+        .get("/api/instances")
         .then(res => {
-          this.qc_records = res.data;
+          this.instances_list = res.data;
+          this.instances_list_selected = res.data[0];
+          this.databases_list = res.data[0].databases;
+          this.databases_list_selected = res.data[0].databases[0];
+        }).then(() => {
+          this.loadDatabase();
         })
         .catch(error => {
-          this.last_error = error;
+          this.last_error = error.msg;
           this.error_dialog = true;
+          this.overlay = false;
+        });
+    },
+    changeInstance(){
+        axios
+        .get("/api/instances/"+this.instances_list_selected.i)
+        .then(res => {
+          this.databases_list = res.data.databases;
+        })
+        .catch(error => {
+          this.last_error = error.msg;
+          this.error_dialog = true;
+          this.overlay = false;
+        });
+    },
+    loadDatabase(){
+        axios
+        .get(`/api/databases/${this.instances_list_selected.i}/${this.databases_list_selected}/${this.record_limit}`)
+        .then(res => {
+          console.log(res)
+        })
+        .catch(error => {
+          this.last_error = error.msg;
+          this.error_dialog = true;
+          this.overlay = false;
         });
     },
 

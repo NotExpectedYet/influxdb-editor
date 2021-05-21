@@ -49,10 +49,14 @@ async function addInfluxInstance({ url = undefined, name = undefined, username =
 
         const currentInfluxInstanceList = grabDataPoint(influx_instances_db);
 
-        let instanceIndex = currentInfluxInstanceList.length
-        if(instanceIndex !== 0){
+        let instanceIndex = currentInfluxInstanceList.length;
+
+        if (instanceIndex === 0) {
             instanceIndex = currentInfluxInstanceList.length + 1;
+        } else {
+            instanceIndex = currentInfluxInstanceList.length;
         }
+
 
 
         const saveConnectionCache = {
@@ -143,8 +147,12 @@ function writePointsToDatebase(dataPoints) {
     }
 }
 
-async function queryDatabase(queryString) {
-    return db.query(queryString)
+function queryDatabase(instance, queryString) {
+    return instance.query(queryString)
+}
+
+function getMeasurements(instance, database = undefined) {
+    return instance.getMeasurements(database)
 }
 
 
@@ -156,5 +164,6 @@ module.exports = {
     testInstanceConnection,
     getInstanceDatabaseNames,
     writePointsToDatebase,
-    queryDatabase
+    queryDatabase,
+    getMeasurements
 }

@@ -59,7 +59,8 @@ const serverStart = async () => {
         res.sendFile(__dirname + '/public/index.html');
     });
 
-    app.use("/api", require("./server_src/routes/api.js", { page: "route" }));
+    app.use("/api", require("./server_src/routes/instances.api.js", { page: "route" }));
+    app.use("/api", require("./server_src/routes/databases.api.js", { page: "route" }));
 };
 
 serverStart();

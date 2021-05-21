@@ -1,4 +1,4 @@
-let influx_connection_cache = [];
+let influx_connection_cache = new Array();
 
 function addNewInfluxInstanceToCache({
     i = undefined,
@@ -11,12 +11,12 @@ function addNewInfluxInstanceToCache({
         throw new Error("No database has been specified!")
     }
 
-    influx_connection_cache[i] = {
+    influx_connection_cache.splice(i, 0, {
         i,
         name,
         instance: instance,
         status: status
-    }
+    });
 
 }
 function removeInstanceFromCache(i = undefined) {
@@ -30,8 +30,11 @@ function removeInstanceFromCache(i = undefined) {
 }
 
 
-async function getInfluxInstanceCache() {
-    return influx_connection_cache;
+function getInfluxInstanceCache(i = undefined) {
+    if (!i) {
+        return influx_connection_cache;
+    }
+    return influx_connection_cache[i];
 }
 
 module.exports = {
