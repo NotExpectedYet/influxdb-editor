@@ -257,9 +257,9 @@ export default {
       { text: 'URL', align: 'center', value: 'url' },
       { text: 'Username', align: 'center', value: 'username' },
       { text: 'Password', align: 'center',value: 'password' },
-      { text: 'Database Count', align: 'center', value: 'databases.length' },
-      { text: 'Connection Status', align: 'center', value: 'status' },
-      { text: 'Actions', value: 'actions', sortable: false }
+      { text: 'Databases', align: 'center', value: 'databases.length' },
+      { text: 'Status', align: 'center', value: 'status' },
+      { text: 'Database Actions', value: 'actions', sortable: false }
     ]
   }),
   computed: {
