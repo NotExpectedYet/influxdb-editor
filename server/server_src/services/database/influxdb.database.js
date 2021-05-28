@@ -186,8 +186,8 @@ async function getMeasurementNames(id) {
     }
 }
 
-async function createDatabase(instance, databaseName) {
-    await instance.createDatabase(databaseName);
+async function createDatabase(instanceCache, databaseName) {
+    await instanceCache.instance.createDatabase(databaseName);
 }
 
 function writePointsToDatebase({ instance, dataPoints, tags, measurementName }) {

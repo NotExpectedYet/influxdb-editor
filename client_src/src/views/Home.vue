@@ -259,7 +259,7 @@ export default {
       { text: 'Password', align: 'center',value: 'password' },
       { text: 'Databases', align: 'center', value: 'databases.length' },
       { text: 'Status', align: 'center', value: 'status' },
-      { text: 'Database Actions', value: 'actions', sortable: false }
+      { text: 'Instance Actions', value: 'actions', sortable: false }
     ]
   }),
   computed: {

@@ -102,6 +102,16 @@ router.get("/instances/:id/:database", async (req, res) => {
         res.sendStatus(500)
     }
 });
+router.post("/instances/create/:id", async (req, res) => {
+     let data = req.body;
+    try {
+        const addDatabase = await addInfluxInstance(data);
+        res.send(addDatabase)
+    } catch (e) {
+        console.error(e.stack)
+        res.sendStatus(500)
+    }
+});
 
 
 module.exports = router;
