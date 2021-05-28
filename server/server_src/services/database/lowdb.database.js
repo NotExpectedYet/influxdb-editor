@@ -23,10 +23,10 @@ function writeDataPoint(database, object) {
 }
 
 function updateDataPoint(database, findObject, updateObject) {
-    db.get(database)
-        .find(findObject)
-        .assign(updateObject)
-        .write()
+    return db.get(database)
+            .find(findObject)
+            .assign(updateObject)
+            .write()
 }
 
 function grabDataPoint(database) {

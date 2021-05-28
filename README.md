@@ -7,16 +7,20 @@ A webserver for managing and editing influxdb...
  - [ ] Simple login and authentication system
  - [x] Allow connection to influx v1.x instances
  - [x] Add influx instance to internal database
- - [ ] Get measurements list on initial api call
+ - [x] Get measurements list on initial api call
  - [ ] Disable pages when no instances available
- - [ ] Validation around instance input
+ - [ ] Validation on inputs
  - [ ] Allow connection to influx v2.x instances (may work already not tested)
  - [ ] Allow to create new influxDB database
  - [x] Scan current database list
  - [x] Select database for managing 
- - [ ] Show records of database
+ - [x] Show records of database
+ - [x] Allow switching between instances, databases, measurements.
+ - [x] Disable selection for any offline instances.
  - [ ] Allow editing, deleting and inserting of records
- - [ ] Allow for graphing solutions on current data
- - [ ] Statistics on database in dashboard
- 
-
+ - [ ] Allow filtering on records: Date range, specific key is "<,>,=".
+ - [ ] Allow for graphing solutions on current data.
+ - [ ] Statistics on database in dashboard.
+ - [ ] Update readme with installation/setup instructions. 
+ - [ ] General code neaten up.
+ - [ ] Global error handler for server. 

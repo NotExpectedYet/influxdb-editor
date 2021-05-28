@@ -21,6 +21,7 @@ import Toolbar from "@/components/Toolbar.vue";
 import VueLuxon from "vue-luxon";
 import HighchartsVue from "highcharts-vue";
 import Highcharts from "highcharts";
+import DatetimePicker from 'vuetify-datetime-picker'
 
 import dark_blue from "@/components/themes/monokai.js";
 Highcharts.theme = dark_blue;
@@ -28,6 +29,7 @@ Highcharts.setOptions(Highcharts.theme);
 Vue.use(HighchartsVue, { Highcharts });
 
 Vue.use(VueLuxon);
+Vue.use(DatetimePicker)
 
 export default Vue.extend({
   name: "App",

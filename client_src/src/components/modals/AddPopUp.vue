@@ -131,7 +131,7 @@
 import axios from "axios";
 
 export default {
-  name: "AddInfluxInstance",
+  name: "AddPopUp",
   props: {
     instancesDialogOpened: {
       type: Boolean,
@@ -188,13 +188,13 @@ export default {
         axios
         .post("/api/instances", instance_options)
         .then(res => {
-          if(res.data.errors.length > 0){
+          if(res.data.errors.length !== 0){
             res.data.errors.forEach((e, index) => {
               this.error_message += `${index}. ${e}<br>`
             })
             this.error_alert = true;
           }else{
-            res.data.databaseList.forEach((d, index) => {
+            res.data.databases.forEach((d, index) => {
               this.instance_databases += `${index}. ${d}<br>`
             })
             this.success_alert = true;
@@ -202,19 +202,18 @@ export default {
             this.name ="";
             this.username = "";
             this.password = "";
-            // TODO
-            // Change this for a function call to the above view.
-            axios
+          }
+        })
+        .catch(error => {
+          this.error_alert = true;
+          this.error_message = toString(error);
+        }).finally(() => {
+          axios
             .get("/api/instances")
             .then(res => {
               this.$emit("update:instancesList", res.data);
               this.$emit("update:instancesCount", res.data.length);
             })
-          }
-        })
-        .catch(error => {
-          this.error_alert = true;
-          this.error_message = error.msg;
         });
     }
 }

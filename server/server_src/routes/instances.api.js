@@ -3,20 +3,22 @@ const path = require("path");
 
 const router = express.Router();
 // const { ensureAuthenticated } = require("../config/auth");
-const { getInfluxInstanceCache } = require("../cache/influxdb.cache.js");
-const { addInfluxInstance, testInstanceConnection, getInstanceDatabaseNames, deleteInfluxInstance } = require("../services/database/influxdb.database.js");
+const { getInfluxInstanceCache, updateInfluxInstanceToCache, resetInfluxInstanceCache } = require("../cache/influxdb.cache.js");
+const { addInfluxInstance, testInstanceConnection, getInstanceDatabaseNames, deleteInfluxInstance, getMeasurementNames } = require("../services/database/influxdb.database.js");
 const { createInfluxURL } = require("../utils/influx.utils.js");
 
-// influxDB
-router.get("/instances", async (req, res) => {
+router.get("/instances/refresh/:id", async (req, res) => {
+    let id = req.params.id;
     try {
-        const instanceCache = await getInfluxInstanceCache();
-        for (let i = 0; i < instanceCache.length; i++){
-            instanceCache[i].status = await testInstanceConnection(instanceCache[i].instance);
-            instanceCache[i].databases = await getInstanceDatabaseNames(instanceCache[i].instance)
-            instanceCache[i].url = createInfluxURL(instanceCache[i].instance._options.hosts[0].protocol, instanceCache[i].instance._options.hosts[0].host, instanceCache[i].instance._options.hosts[0].port);
-            instanceCache[i].password = instanceCache[i].instance._options.password;
-            instanceCache[i].username = instanceCache[i].instance._options.username;
+        const instanceCache = await getInfluxInstanceCache(id);
+        instanceCache.status = await testInstanceConnection(instanceCache.id);
+        if (instanceCache.status) {
+            instanceCache.databases = await getInstanceDatabaseNames(instanceCache.id);
+            updateInfluxInstanceToCache({id: instanceCache.id, key: "databases", value: instanceCache.databases });
+            updateInfluxInstanceToCache({id: instanceCache.id, key: "selected_database", value: instanceCache.databases[0] });
+            instanceCache.measurement_names = await getMeasurementNames(instanceCache.id)
+            updateInfluxInstanceToCache({id: instanceCache.id, key: "measurement_names", value: instanceCache.measurement_names });
+            updateInfluxInstanceToCache({id: instanceCache.id, key: "selected_measurement", value: instanceCache.measurement_names[0] });
         }
         res.send(instanceCache)
     } catch (e) {
@@ -24,21 +26,19 @@ router.get("/instances", async (req, res) => {
         res.sendStatus(500)
     }
 });
-router.get("/instances/:id", async (req, res) => {
-    let i = req.params.id;
+
+
+// influxDB
+router.get("/instances", (req, res) => {
     try {
-        const instanceCache = await getInfluxInstanceCache(i);
-        instanceCache.status = await testInstanceConnection(instanceCache.instance);
-        instanceCache.databases = await getInstanceDatabaseNames(instanceCache.instance)
-        instanceCache.url = createInfluxURL(instanceCache.instance._options.hosts[0].protocol, instanceCache.instance._options.hosts[0].host, instanceCache.instance._options.hosts[0].port);
-        instanceCache.password = instanceCache.instance._options.password;
-        instanceCache.username = instanceCache.instance._options.username;
+        const instanceCache = getInfluxInstanceCache();
         res.send(instanceCache)
     } catch (e) {
         console.error(e.stack)
         res.sendStatus(500)
     }
 });
+
 router.post("/instances", async (req, res) => {
      let data = req.body;
     try {
@@ -50,9 +50,9 @@ router.post("/instances", async (req, res) => {
     }
 });
 router.delete("/instances/:index", async (req, res) => {
-    let i = req.params.index;
+    let id = req.params.index;
     try {
-        await deleteInfluxInstance(i);
+        await deleteInfluxInstance(id);
         res.send(true)
     } catch (e) {
         console.error(e.stack)
@@ -60,18 +60,48 @@ router.delete("/instances/:index", async (req, res) => {
     }
 });
 router.put("/instances/:index", async (req, res) => {
-    let i = req.params.index;
-    let newData = req.body;
+    // let id = req.params.index;
+    // let newData = req.body;
+    // const instanceCache = getInfluxInstanceCache();
+    // try {
+    //         await resetInfluxInstanceCache();
+    //         await updateDataPoint(influx_instances_db, instanceCache[id], newData)
+    //         await influxInstanceConnect();
+    //     res.send(true)
+    // } catch (e) {
+    //     console.error(e.stack)
+    //     res.sendStatus(500)
+    // }
+});
+
+router.get("/instances/:id/:database", async (req, res) => {
+    let id = req.params.id;
+    let database_name = req.params.database;
     try {
-        await deleteInfluxInstance(i);
-        await addInfluxInstance(newData);
-        res.send(true)
+        const instanceCache = await getInfluxInstanceCache(id);
+        instanceCache.status = await testInstanceConnection(instanceCache.id);
+
+        if (instanceCache.status) {
+            let database;
+            if (database_name === "null") {
+                database = instanceCache.selected_database;
+            } else {
+                database = req.params.database;
+            }
+            instanceCache.databases = await getInstanceDatabaseNames(instanceCache.id);
+            updateInfluxInstanceToCache({id: instanceCache.id, key: "databases", value: instanceCache.databases });
+            updateInfluxInstanceToCache({id: instanceCache.id, key: "selected_database", value: database });
+            instanceCache.measurement_names = await getMeasurementNames(instanceCache.id)
+            updateInfluxInstanceToCache({id: instanceCache.id, key: "measurement_names", value: instanceCache.measurement_names });
+            updateInfluxInstanceToCache({id: instanceCache.id, key: "selected_measurement", value: instanceCache.measurement_names[0] });
+        }
+        res.send(instanceCache)
     } catch (e) {
+        console.log(e)
         console.error(e.stack)
         res.sendStatus(500)
     }
 });
-
 
 
 module.exports = router;

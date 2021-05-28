@@ -1,44 +1,61 @@
 let influx_connection_cache = new Array();
 
 function addNewInfluxInstanceToCache({
-    i = undefined,
+    id = undefined,
     name = undefined,
+    url = undefined,
     instance = undefined,
-    status = undefined
+    status = undefined,
+    username = undefined,
+    password = undefined,
 }) {
 
     if (!name || !instance) {
         throw new Error("No database has been specified!")
     }
-
-    influx_connection_cache.splice(i, 0, {
-        i,
+    influx_connection_cache.splice(id, 0, {
+        id,
         name,
-        instance: instance,
-        status: status
+        instance,
+        url,
+        status,
+        username,
+        password,
     });
-
 }
-function removeInstanceFromCache(i = undefined) {
 
-    if (!i) {
+function updateInfluxInstanceToCache({
+    id = undefined,
+    key = undefined,
+    value = undefined
+}) {
+    influx_connection_cache[id][key] = value;
+}
+
+function removeInstanceFromCache(id = null) {
+    if (id === null) {
         throw new Error("No index has been specified!")
     }
-
-    influx_connection_cache.splice(i, 1)
-
+    influx_connection_cache.splice(id, 1)
+    return;
 }
 
 
-function getInfluxInstanceCache(i = undefined) {
-    if (!i) {
+function getInfluxInstanceCache(id = null) {
+    if (id === null) {
         return influx_connection_cache;
     }
-    return influx_connection_cache[i];
+    return influx_connection_cache[id];
+}
+
+function resetInfluxInstanceCache() {
+    return influx_connection_cache = new Array();
 }
 
 module.exports = {
     addNewInfluxInstanceToCache,
     removeInstanceFromCache,
-    getInfluxInstanceCache
+    getInfluxInstanceCache,
+    updateInfluxInstanceToCache,
+    resetInfluxInstanceCache
 }
